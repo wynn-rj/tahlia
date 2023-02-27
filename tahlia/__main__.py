@@ -6,6 +6,7 @@ import flicker
 import scene
 import random
 import time
+import window
 from urllib import parse
 
 class Haunter():
@@ -51,11 +52,16 @@ class Handler(http.server.BaseHTTPRequestHandler):
         qs = parse.parse_qsl(parsed.query)
         scene_manager.switch(qs[0][1])
 
+    def handle_display(self, parsed: parse.ParseResult):
+        qs = parse.parse_qsl(parsed.query)
+        window.display_on_window(**{k: v for k, v in qs})
+
     def do_GET(self):
         handlers = {
             '/flicker_on': self.handle_on,
             '/flicker_off': self.handle_off,
-            '/scene': self.switch_scene
+            '/scene': self.switch_scene,
+            '/display': self.handle_display,
         }
         parsed = parse.urlparse(self.path)
         if parsed.path not in handlers:
