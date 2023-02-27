@@ -33,9 +33,13 @@ class SceneManager():
         return res
 
     def switch(self, scene: str):
-        scene = self._assert_scene(scene)
+        sid = self._get_scene(scene)
+        if sid is None:
+            self.refresh()
+            sid = self._assert_scene(scene)
         self.bridge.groups[self.group].action(
-            scene=scene, transitiontime=10*self.delay)
+            scene=sid, transitiontime=10*self.delay)
+
 
 class TimeTrackingSceneManager(SceneManager):
     """
