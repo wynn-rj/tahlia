@@ -3,11 +3,15 @@ from typing import Union
 from PIL.Image import Image
 from StreamDeck.Devices.StreamDeck import StreamDeck
 
-from tahlia.stream_deck.util import (_FPS, PredefinedKeys, add_text_to_image, get_key_image)
+from tahlia.stream_deck.util import (
+    _FPS,
+    PredefinedKeys,
+    add_text_to_image,
+    get_key_image,
+)
 
 
-class Key():
-
+class Key:
     def __init__(self) -> None:
         self._error_state = None
 
@@ -45,8 +49,7 @@ class Key():
 
 
 class StaticKey(Key):
-
-    def __init__(self, image: Image, text: str = ''):
+    def __init__(self, image: Image, text: str = ""):
         super().__init__()
         self._redraw = True
         self._image = image

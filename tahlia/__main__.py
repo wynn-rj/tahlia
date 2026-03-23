@@ -24,7 +24,7 @@ from tahlia.util import get_config, load_layout_file
 
 
 def load_bot():
-    return asyncio.run(bot_setup()), get_config()['token']
+    return asyncio.run(bot_setup()), get_config()["token"]
 
 
 def load_light_manager():
@@ -32,42 +32,46 @@ def load_light_manager():
     def delay_func(delay, scenes):
         return [3000, 2400, 2100, 1400, 1000][len(scenes)]
 
-    times = ['Sunup', 'Midday', 'Sundown', ['Night', 'Night Town']]
+    times = ["Sunup", "Midday", "Sundown", ["Night", "Night Town"]]
     return scene.TimeTrackingSceneManager(delay=3, delay_func=delay_func, times=times)
 
 
 def get_page(pm: PageManager, layout: list, label: str):
-    i = next(filter(lambda x: (x[1] or {}).get('label') == label, enumerate(layout)), (None,))[0]
+    i = next(
+        filter(lambda x: (x[1] or {}).get("label") == label, enumerate(layout)), (None,)
+    )[0]
     if i is None or not isinstance((key := pm.home_page.keys[i]), PageChangingKey):
-        raise ValueError(f'Failed to find page \'{label}\'')
+        raise ValueError(f"Failed to find page '{label}'")
     return key.page
 
 
 def main():
-    print('Loading light manager')
+    print("Loading light manager")
     light_manager = load_light_manager()
-    print('Loading bot')
+    print("Loading bot")
     bot, token = load_bot()
-    print('Loading layout')
-    layout = load_layout_file('home.json')
-    print('Loading audio client')
+    print("Loading layout")
+    layout = load_layout_file("home.json")
+    print("Loading audio client")
     audio_client = SpotifyAudioClient()
     if audio_client.device_id:
-        print('  Audio client connected to preferred device')
+        print("  Audio client connected to preferred device")
 
-    print('Loading stream deck')
+    print("Loading stream deck")
     with use_stream_deck() as (deck, run_deck):
-        page_manager = PageLoader(deck, light_manager, audio_client).load_manager(layout)
+        page_manager = PageLoader(deck, light_manager, audio_client).load_manager(
+            layout
+        )
         threading.Thread(target=partial(run_deck, page_manager)).start()
 
-        print('Loading scene manager cog')
-        light_page = get_page(page_manager, layout, 'Lights')
+        print("Loading scene manager cog")
+        light_page = get_page(page_manager, layout, "Lights")
         asyncio.run(bot.add_cog(SceneManagerCog(bot, light_manager, light_page)))
-        print('Loading window manager cog')
-        window_page = get_page(page_manager, layout, 'Window')
+        print("Loading window manager cog")
+        window_page = get_page(page_manager, layout, "Window")
         asyncio.run(bot.add_cog(WindowManagerCog(bot, window_page)))
-        print('Loading audio manager cog')
-        music_page = get_page(page_manager, layout, 'Music')
+        print("Loading audio manager cog")
+        music_page = get_page(page_manager, layout, "Music")
         asyncio.run(bot.add_cog(AudioManagerCog(bot, music_page, audio_client)))
 
         bot.run(token)
@@ -79,9 +83,10 @@ def main():
             pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # main()
     import time
+
     c = SpotifyAudioClient()
     while True:
         c.client.current_playback()

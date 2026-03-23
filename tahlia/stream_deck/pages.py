@@ -8,12 +8,11 @@ from tahlia.stream_deck.keys import Key, StaticKey
 from tahlia.stream_deck.util import PredefinedKeys, get_key_image
 
 
-class Page():
-
+class Page:
     def __init__(self, deck: StreamDeck, keys: List[Union[Key, None]]):
         self.deck = deck
         if len(keys) > deck.key_count():
-            raise ValueError('Cannot define more keys than the deck supports')
+            raise ValueError("Cannot define more keys than the deck supports")
         self._keys = keys
         self._enabled = False
 
@@ -56,8 +55,7 @@ class Page():
         return True
 
 
-class PageManager():
-
+class PageManager:
     def __init__(self, home: Union[Page, None] = None):
         self._current_page: Union[None, Page] = None
         self.home_page = home
@@ -78,8 +76,9 @@ class PageManager():
 
 
 class PageChangingKey(StaticKey):
-
-    def __init__(self, image: Image.Image, page: Page, page_manager: PageManager, label: str = ''):
+    def __init__(
+        self, image: Image.Image, page: Page, page_manager: PageManager, label: str = ""
+    ):
         super().__init__(image, label)
         self.page = page
         self._page_manager = page_manager
@@ -89,9 +88,8 @@ class PageChangingKey(StaticKey):
 
 
 class TabHelperKey(StaticKey):
-
     def __init__(self, deck: StreamDeck, key: PredefinedKeys, action: Callable):
-        super().__init__(get_key_image(deck, key), '')
+        super().__init__(get_key_image(deck, key), "")
         self._action = action
 
     def perform_action(self):
@@ -99,16 +97,27 @@ class TabHelperKey(StaticKey):
 
 
 class TabbedPage(Page):
-
-    def __init__(self, deck: StreamDeck, page_manager: PageManager, keys: List[Union[Key, None]], show_home=True):
+    def __init__(
+        self,
+        deck: StreamDeck,
+        page_manager: PageManager,
+        keys: List[Union[Key, None]],
+        show_home=True,
+    ):
         self._page_size = deck.key_count() - 2
         self._page_manager = page_manager
         super().__init__(deck, [])
 
         if show_home:
-            keys = [TabHelperKey(deck, PredefinedKeys.HOME_PAGE, page_manager.show_home), *keys]
-        page1 = keys[:self._page_size + 1]
-        other_pages = [keys[i:i + self._page_size] for i in range(len(page1), len(keys), self._page_size)]
+            keys = [
+                TabHelperKey(deck, PredefinedKeys.HOME_PAGE, page_manager.show_home),
+                *keys,
+            ]
+        page1 = keys[: self._page_size + 1]
+        other_pages = [
+            keys[i : i + self._page_size]
+            for i in range(len(page1), len(keys), self._page_size)
+        ]
         self._pages = [page1, *other_pages]
         self._cur_page = 0
         self._next_page = 0
@@ -121,10 +130,15 @@ class TabbedPage(Page):
             page1.extend([None] * missing)
         prev_page = page1
         for page in self._pages[1:]:
-            prev_page.append(TabHelperKey(deck, PredefinedKeys.NEXT_PAGE, self.next_page))
+            prev_page.append(
+                TabHelperKey(deck, PredefinedKeys.NEXT_PAGE, self.next_page)
+            )
             if (missing := self._page_size - len(page)) > 0:
                 page.extend([None] * missing)
-            page.insert(self._prev_key_index, TabHelperKey(deck, PredefinedKeys.PREV_PAGE, self.prev_page))
+            page.insert(
+                self._prev_key_index,
+                TabHelperKey(deck, PredefinedKeys.PREV_PAGE, self.prev_page),
+            )
             prev_page = page
 
     @property
@@ -157,6 +171,10 @@ class TabbedPage(Page):
             self._pages[-1][i] = key
             return
         self._keys_on_final_page = 1
-        self._pages[-1].append(TabHelperKey(self.deck, PredefinedKeys.NEXT_PAGE, self.next_page))
+        self._pages[-1].append(
+            TabHelperKey(self.deck, PredefinedKeys.NEXT_PAGE, self.next_page)
+        )
         self._pages.append([key, *([None] * (self._page_size))])
-        self._pages[-1][self._prev_key_index] = TabHelperKey(self.deck, PredefinedKeys.PREV_PAGE, self.prev_page)
+        self._pages[-1][self._prev_key_index] = TabHelperKey(
+            self.deck, PredefinedKeys.PREV_PAGE, self.prev_page
+        )

@@ -13,9 +13,13 @@ from tahlia.util import IMAGE_DIR, get_image, load_layout_file
 from tahlia.window.window import display_on_window
 
 
-class PageLoader():
-
-    def __init__(self, deck: StreamDeck, scene_manager: SceneManager, audio_client: SpotifyAudioClient):
+class PageLoader:
+    def __init__(
+        self,
+        deck: StreamDeck,
+        scene_manager: SceneManager,
+        audio_client: SpotifyAudioClient,
+    ):
         self.deck = deck
         self.scene_manager = scene_manager
         self.page_manager = None
@@ -34,33 +38,36 @@ class PageLoader():
         if not isinstance(config, dict):
             return None
         create_func = {
-            'scene': SwitchSceneKey.from_config,
-            'window': WindowImageKey.from_config,
-            'folder': self.create_folder,
-            'playlist': AudioPlayPlaylistKey.from_config,
-            'volume': AudioVolumeChangeKey.from_config,
-            'play/pause': AudioPlayPauseKey.from_config,
-            'next': AudioNextKey.from_config
-        }.get(config.get('type'))
+            "scene": SwitchSceneKey.from_config,
+            "window": WindowImageKey.from_config,
+            "folder": self.create_folder,
+            "playlist": AudioPlayPlaylistKey.from_config,
+            "volume": AudioVolumeChangeKey.from_config,
+            "play/pause": AudioPlayPauseKey.from_config,
+            "next": AudioNextKey.from_config,
+        }.get(config.get("type"))
         return None if create_func is None else create_func(self, config)
 
     def get_image(self, config: dict):
-        if (img_path := get_image(config.get('image'))) is None:
+        if (img_path := get_image(config.get("image"))) is None:
             return None
         image = load_image(self.deck, img_path)
         return (image, img_path)
 
     def create_folder(self, _, config: dict):
-        if 'keys' not in config or (image := self.get_image(config)) is None:
-            print('Abort folder add')
+        if "keys" not in config or (image := self.get_image(config)) is None:
+            print("Abort folder add")
             return None
-        page = self.load_page(load_layout_file(config['keys']))
-        return PageChangingKey(image[0], page, self.page_manager, label=config.get('label'))
+        page = self.load_page(load_layout_file(config["keys"]))
+        return PageChangingKey(
+            image[0], page, self.page_manager, label=config.get("label")
+        )
 
 
 class SwitchSceneKey(StaticKey):
-
-    def __init__(self, image: Image, manager: SceneManager, scene: str, label: str = ''):
+    def __init__(
+        self, image: Image, manager: SceneManager, scene: str, label: str = ""
+    ):
         super().__init__(image, label or scene)
         self._scene = scene
         self._scene_manager = manager
@@ -70,16 +77,17 @@ class SwitchSceneKey(StaticKey):
 
     @staticmethod
     def from_config(loader: PageLoader, config: dict):
-        if 'scene' not in config or (image := loader.get_image(config)) is None:
+        if "scene" not in config or (image := loader.get_image(config)) is None:
             return None
-        if not loader.scene_manager.has_scene(scene := config['scene']):
+        if not loader.scene_manager.has_scene(scene := config["scene"]):
             print(f"Unknown scene '{scene}'")
             return None
-        return SwitchSceneKey(image[0], loader.scene_manager, scene, config.get('label'))
+        return SwitchSceneKey(
+            image[0], loader.scene_manager, scene, config.get("label")
+        )
 
 
 class WindowImageKey(StaticKey):
-
     def __init__(self, image: Image, label: str, file: str):
         super().__init__(image, label)
         self._file = file
@@ -89,14 +97,15 @@ class WindowImageKey(StaticKey):
 
     @staticmethod
     def from_config(loader: PageLoader, config: dict):
-        if 'label' not in config or (image := loader.get_image(config)) is None:
+        if "label" not in config or (image := loader.get_image(config)) is None:
             return None
-        return WindowImageKey(image[0], config['label'], image[1])
+        return WindowImageKey(image[0], config["label"], image[1])
 
 
 class AudioPlayPlaylistKey(StaticKey):
-
-    def __init__(self, image: Image, audio_client: SpotifyAudioClient, label: str, uri: str):
+    def __init__(
+        self, image: Image, audio_client: SpotifyAudioClient, label: str, uri: str
+    ):
         super().__init__(image, label)
         self._uri = uri
         self._client = audio_client
@@ -106,13 +115,18 @@ class AudioPlayPlaylistKey(StaticKey):
 
     @staticmethod
     def from_config(loader: PageLoader, config: dict):
-        if 'label' not in config or 'uri' not in config or (image := loader.get_image(config)) is None:
+        if (
+            "label" not in config
+            or "uri" not in config
+            or (image := loader.get_image(config)) is None
+        ):
             return None
-        return AudioPlayPlaylistKey(image[0], loader.audio_client, config['label'], config['uri'])
+        return AudioPlayPlaylistKey(
+            image[0], loader.audio_client, config["label"], config["uri"]
+        )
 
 
 class AudioNextKey(StaticKey):
-
     def __init__(self, image: Image, audio_client: SpotifyAudioClient):
         super().__init__(image)
         self._client = audio_client
@@ -128,7 +142,6 @@ class AudioNextKey(StaticKey):
 
 
 class AudioPlayPauseKey(StaticKey):
-
     def __init__(self, image: Image, audio_client: SpotifyAudioClient):
         super().__init__(image)
         self._client = audio_client
@@ -144,7 +157,6 @@ class AudioPlayPauseKey(StaticKey):
 
 
 class AudioVolumeChangeKey(StaticKey):
-
     def __init__(self, image: Image, audio_client: SpotifyAudioClient, amount: int):
         super().__init__(image)
         self._client = audio_client
@@ -155,6 +167,6 @@ class AudioVolumeChangeKey(StaticKey):
 
     @staticmethod
     def from_config(loader: PageLoader, config: dict):
-        if 'amount' not in config or (image := loader.get_image(config)) is None:
+        if "amount" not in config or (image := loader.get_image(config)) is None:
             return None
-        return AudioVolumeChangeKey(image[0], loader.audio_client, config['amount'])
+        return AudioVolumeChangeKey(image[0], loader.audio_client, config["amount"])

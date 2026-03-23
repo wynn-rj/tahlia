@@ -22,7 +22,7 @@ def _run(deck: StreamDeck, page_manager: PageManager):
             try:
                 page_manager.current_page.press_key(key)
             except:
-                _log.exception('Unhandled exception during key press')
+                _log.exception("Unhandled exception during key press")
 
     deck.set_key_callback(press)
     page_manager.show_home()
@@ -35,7 +35,7 @@ def _run(deck: StreamDeck, page_manager: PageManager):
         except TransportError as ex:
             if not deck.is_open():
                 return
-            logging.exception('Transport error')
+            logging.exception("Transport error")
         next_frame += frame_time
         sleep_interval = float(next_frame) - time.monotonic()
         if sleep_interval >= 0:
@@ -47,7 +47,7 @@ def use_stream_deck():
     streamdecks: List[StreamDeck] = DeviceManager().enumerate()
     deck = next(filter(lambda s: s.is_visual(), streamdecks), None)
     if deck is None:
-        raise ConnectionError('Unable to find stream deck')
+        raise ConnectionError("Unable to find stream deck")
 
     deck.open()
     deck.reset()

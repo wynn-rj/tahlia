@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 from typing import ContextManager
 
-IMAGE_DIR = Path(Path(__file__).parent.parent.parent, 'images')
-LAYOUT_DIR = Path(Path(__file__).parent.parent.parent, 'layout')
-CONFIG = Path(Path(__file__).parent.parent.parent, 'config.json')
+IMAGE_DIR = Path(Path(__file__).parent.parent.parent, "images")
+LAYOUT_DIR = Path(Path(__file__).parent.parent.parent, "layout")
+CONFIG = Path(Path(__file__).parent.parent.parent, "config.json")
 
 _loaded_config = None
 
@@ -22,7 +22,7 @@ def get_file(file: str, dir: Path):
     if not isinstance(file, str):
         return None
     absfile = str(Path(file).absolute().name)
-    if absfile != file or absfile.startswith('.'):
+    if absfile != file or absfile.startswith("."):
         return
     path = dir.joinpath(absfile).resolve()
     if not path.exists():
@@ -46,7 +46,7 @@ def update_layout_file(name: str, no_save=False) -> ContextManager[list]:
     yield layout
     if no_save:
         return
-    with open(file, 'w') as f:
+    with open(file, "w") as f:
         json.dump(layout, f)
 
 
