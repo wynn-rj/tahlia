@@ -76,10 +76,4 @@ def main():
 
 
 if __name__ == "__main__":
-    # main()
-    import time
-
-    c = SpotifyAudioClient()
-    while True:
-        c.client.current_playback()
-        time.sleep(5)
+    main()

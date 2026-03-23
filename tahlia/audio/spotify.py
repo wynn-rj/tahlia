@@ -21,7 +21,6 @@ class SpotifyAudioClient:
         self.device_id = device_map.get(
             config.get("spotify-preferred-device", None), None
         )
-        print(self.device_id)
 
     def play_playlist(self, uri):
         self.client.start_playback(device_id=self.device_id, context_uri=uri)
