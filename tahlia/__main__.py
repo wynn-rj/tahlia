@@ -1,17 +1,9 @@
 import asyncio
-import http.server
-import json
-import random
-import sys
 import threading
 import time
 from functools import partial
-from threading import Thread
-from urllib import parse
 
-import tahlia.lights.flicker as flicker
 import tahlia.lights.scene as scene
-import tahlia.window.window as window
 from tahlia.audio.spotify import SpotifyAudioClient
 from tahlia.bot.audio import AudioManagerCog
 from tahlia.bot.entry import setup as bot_setup

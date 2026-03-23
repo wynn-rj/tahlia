@@ -21,7 +21,7 @@ def _run(deck: StreamDeck, page_manager: PageManager):
         if pressed:
             try:
                 page_manager.current_page.press_key(key)
-            except:
+            except Exception:
                 _log.exception("Unhandled exception during key press")
 
     deck.set_key_callback(press)
@@ -32,7 +32,7 @@ def _run(deck: StreamDeck, page_manager: PageManager):
         try:
             with deck:
                 page_manager.current_page.render_keyframe()
-        except TransportError as ex:
+        except TransportError:
             if not deck.is_open():
                 return
             logging.exception("Transport error")

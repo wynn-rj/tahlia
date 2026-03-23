@@ -1,10 +1,7 @@
-import discord
 from discord.ext import commands
-from StreamDeck.Devices.StreamDeck import StreamDeck
 
 from tahlia.bot.util import get_image_from_message
-from tahlia.lights.scene import SceneManager
-from tahlia.stream_deck.integration import SwitchSceneKey, WindowImageKey
+from tahlia.stream_deck.integration import WindowImageKey
 from tahlia.stream_deck.pages import Page
 from tahlia.stream_deck.util import load_image
 from tahlia.util import update_layout_file

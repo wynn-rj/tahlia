@@ -1,4 +1,3 @@
-import json
 
 from qhue import Bridge
 

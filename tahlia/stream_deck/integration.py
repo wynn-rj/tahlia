@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import List, Union
 
 from PIL.Image import Image
@@ -9,7 +8,7 @@ from tahlia.lights.scene import SceneManager
 from tahlia.stream_deck.keys import Key, StaticKey
 from tahlia.stream_deck.pages import PageChangingKey, PageManager, TabbedPage
 from tahlia.stream_deck.util import load_image
-from tahlia.util import IMAGE_DIR, get_image, load_layout_file
+from tahlia.util import get_image, load_layout_file
 from tahlia.window.window import display_on_window
 
 

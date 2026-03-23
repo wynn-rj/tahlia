@@ -1,19 +1,13 @@
-import discord
 from discord.ext import commands
-from StreamDeck.Devices.StreamDeck import StreamDeck
 
 from tahlia.audio.spotify import SpotifyAudioClient
 from tahlia.bot.entry import BotMessageException
 from tahlia.bot.util import (
     _download_file,
-    _get_image_from_embed_url,
     get_image_from_message,
 )
-from tahlia.lights.scene import SceneManager
 from tahlia.stream_deck.integration import (
     AudioPlayPlaylistKey,
-    SwitchSceneKey,
-    WindowImageKey,
 )
 from tahlia.stream_deck.pages import Page
 from tahlia.stream_deck.util import load_image
@@ -50,7 +44,7 @@ class AudioManagerCog(commands.Cog):
                 return
             try:
                 image_path = await _download_file(context["images"][0]["url"])
-            except:
+            except Exception:
                 await ctx.send("Unable to retrieve image from audio link")
                 return
         with update_layout_file("music.json") as layout:

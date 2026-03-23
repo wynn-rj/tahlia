@@ -1,6 +1,4 @@
-import discord
 from discord.ext import commands
-from StreamDeck.Devices.StreamDeck import StreamDeck
 
 from tahlia.bot.util import get_image_from_message
 from tahlia.lights.scene import SceneManager

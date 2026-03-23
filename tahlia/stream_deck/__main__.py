@@ -1,7 +1,6 @@
 import os
 import threading
 from entry import use_stream_deck
-from PIL import Image
 from pages import PageChangingKey, PageManager, Page, TabbedPage, TabHelperKey
 from keys import StaticKey
 from util import PredefinedKeys, get_key_image, load_image
