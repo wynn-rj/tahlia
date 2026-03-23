@@ -1,13 +1,7 @@
-from bridge import load_bridge
+from threading import Thread
+from tahlia.lights.bridge import load_bridge
 import time
 import random
-import signal
-
-running = True
-def handler(*args, **kwargs):
-    print('Exiting shortly..')
-    global running
-    running = False
 
 def coinflip():
     return random.randint(0, 1) == 0
@@ -68,18 +62,32 @@ class HueHaunt():
         else:
             self.flicker()
 
-def main():
-    h = HueHaunt()
-    signal.signal(signal.SIGINT, handler)
-    signal.signal(signal.SIGTERM, handler)
-    while running:
-        h.run_once()
-        i, f = divmod(random.uniform(30, 60), 1)
-        for _ in range(int(i)):
-            time.sleep(1)
-            if not running:
-                return
-        time.sleep(f)
+class Haunter():
+    def __init__(self, *args, **kwargs):
+        self.haunting = False
+        self.haunt_thread = None
 
-if __name__ == '__main__':
-    main()
+    def haunt(self):
+        h = HueHaunt()
+        while self.haunting:
+            h.run_once()
+            i, f = divmod(random.uniform(5, 10), 1)
+            for _ in range(int(i)):
+                time.sleep(1)
+                if not self.haunting:
+                    return
+            time.sleep(f)
+
+    def start(self):
+        if self.haunting:
+            return
+        self.haunting = True
+        self.haunt_thread = Thread(target=self.haunt)
+        self.haunt_thread.start()
+
+    def stop(self):
+        if not self.haunting:
+            return
+        self.haunting = False
+        self.haunt_thread.join()
+        self.haunt_thread = None

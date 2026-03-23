@@ -1,7 +1,7 @@
 from time import sleep
 from typing import Sequence, Union, Optional, Callable
 
-from bridge import load_bridge
+from tahlia.lights.bridge import load_bridge
 
 class SceneException(Exception):
     pass
@@ -31,6 +31,9 @@ class SceneManager():
         if res is None:
             raise SceneException(f'Unknown scene {scene}')
         return res
+    
+    def has_scene(self, scene: str):
+        return self._get_scene(scene) is not None
 
     def switch(self, scene: str):
         sid = self._get_scene(scene)

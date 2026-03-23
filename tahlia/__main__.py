@@ -1,88 +1,88 @@
-import sys
-import json
+import asyncio
 import http.server
-from threading import Thread
-import flicker
-import scene
+import json
 import random
+import sys
+import threading
 import time
-import window
+from functools import partial
+from threading import Thread
 from urllib import parse
 
-class Haunter():
-    def __init__(self, *args, **kwargs):
-        self.haunting = False
-        self.haunt_thread = None
+import tahlia.lights.flicker as flicker
+import tahlia.lights.scene as scene
+import tahlia.window.window as window
+from tahlia.audio.spotify import SpotifyAudioClient
+from tahlia.bot.audio import AudioManagerCog
+from tahlia.bot.entry import setup as bot_setup
+from tahlia.bot.lights import SceneManagerCog
+from tahlia.bot.window import WindowManagerCog
+from tahlia.stream_deck.entry import use_stream_deck
+from tahlia.stream_deck.integration import PageLoader
+from tahlia.stream_deck.pages import PageChangingKey, PageManager
+from tahlia.util import get_config, load_layout_file
 
-    def haunt(self):
-        h = flicker.HueHaunt()
-        while self.haunting:
-            h.run_once()
-            i, f = divmod(random.uniform(5, 10), 1)
-            for _ in range(int(i)):
-                time.sleep(1)
-                if not self.haunting:
-                    return
-            time.sleep(f)
 
-def delay_func(delay, scenes):
-    return [3000, 2400, 2100, 1400, 1000][len(scenes)]
+def load_bot():
+    return asyncio.run(bot_setup()), get_config()['token']
 
-times = ['Sunup', 'Midday', 'Sundown', ['Night', 'Night Town']]
-haunter = Haunter()
-scene_manager = scene.TimeTrackingSceneManager(delay=3, delay_func=delay_func, times=times)
 
-class Handler(http.server.BaseHTTPRequestHandler):
+def load_light_manager():
 
-    def handle_on(self, _):
-        if haunter.haunting:
-            return
-        haunter.haunting = True
-        haunter.haunt_thread = Thread(target=haunter.haunt)
-        haunter.haunt_thread.start()
+    def delay_func(delay, scenes):
+        return [3000, 2400, 2100, 1400, 1000][len(scenes)]
 
-    def handle_off(self, _):
-        if not haunter.haunting:
-            return
-        haunter.haunting = False
-        haunter.haunt_thread.join()
-        haunter.haunt_thread = None
+    times = ['Sunup', 'Midday', 'Sundown', ['Night', 'Night Town']]
+    return scene.TimeTrackingSceneManager(delay=3, delay_func=delay_func, times=times)
 
-    def switch_scene(self, parsed: parse.ParseResult):
-        qs = parse.parse_qsl(parsed.query)
-        scene_manager.switch(qs[0][1])
 
-    def handle_display(self, parsed: parse.ParseResult):
-        qs = parse.parse_qsl(parsed.query)
-        window.display_on_window(**{k: v for k, v in qs})
+def get_page(pm: PageManager, layout: list, label: str):
+    i = next(filter(lambda x: (x[1] or {}).get('label') == label, enumerate(layout)), (None,))[0]
+    if i is None or not isinstance((key := pm.home_page.keys[i]), PageChangingKey):
+        raise ValueError(f'Failed to find page \'{label}\'')
+    return key.page
 
-    def do_GET(self):
-        handlers = {
-            '/flicker_on': self.handle_on,
-            '/flicker_off': self.handle_off,
-            '/scene': self.switch_scene,
-            '/display': self.handle_display,
-        }
-        parsed = parse.urlparse(self.path)
-        if parsed.path not in handlers:
-            self.send_error(http.server.HTTPStatus.NOT_FOUND)
-            return
-        try:
-            handlers[parsed.path](parsed)
-        except:
-            self.send_error(http.server.HTTPStatus.INTERNAL_SERVER_ERROR)
-            raise
-        sbody = json.dumps({"status":"ok"})
-        body = sbody.encode(sys.getfilesystemencoding(), 'surrogateescape')
-        self.send_response(http.server.HTTPStatus.OK)
-        self.send_header("Content-type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
 
 def main():
-    with http.server.HTTPServer(('', 7890), Handler) as httpd:
-        httpd.serve_forever()
+    print('Loading light manager')
+    light_manager = load_light_manager()
+    print('Loading bot')
+    bot, token = load_bot()
+    print('Loading layout')
+    layout = load_layout_file('home.json')
+    print('Loading audio client')
+    audio_client = SpotifyAudioClient()
+    if audio_client.device_id:
+        print('  Audio client connected to preferred device')
+
+    print('Loading stream deck')
+    with use_stream_deck() as (deck, run_deck):
+        page_manager = PageLoader(deck, light_manager, audio_client).load_manager(layout)
+        threading.Thread(target=partial(run_deck, page_manager)).start()
+
+        print('Loading scene manager cog')
+        light_page = get_page(page_manager, layout, 'Lights')
+        asyncio.run(bot.add_cog(SceneManagerCog(bot, light_manager, light_page)))
+        print('Loading window manager cog')
+        window_page = get_page(page_manager, layout, 'Window')
+        asyncio.run(bot.add_cog(WindowManagerCog(bot, window_page)))
+        print('Loading audio manager cog')
+        music_page = get_page(page_manager, layout, 'Music')
+        asyncio.run(bot.add_cog(AudioManagerCog(bot, music_page, audio_client)))
+
+        bot.run(token)
+
+    for t in threading.enumerate():
+        try:
+            t.join()
+        except RuntimeError:
+            pass
+
 
 if __name__ == '__main__':
-    main()
+    # main()
+    import time
+    c = SpotifyAudioClient()
+    while True:
+        c.client.current_playback()
+        time.sleep(5)
